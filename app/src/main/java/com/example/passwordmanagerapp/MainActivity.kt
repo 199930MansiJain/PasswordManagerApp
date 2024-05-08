@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.passwordmanagerapp.dto.PasswordManagerDTO
 import com.example.passwordmanagerapp.state.MainActivityUiState
 import com.example.passwordmanagerapp.ui.theme.PasswordManagerAppTheme
@@ -49,7 +50,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun PasswordsListView(){
-    val viewModel = viewModel<HomeScreenViewModel>()
+    val viewModel = viewModel<>()
     val homeUiState by viewModel.state.collectAsState()
 
 }
