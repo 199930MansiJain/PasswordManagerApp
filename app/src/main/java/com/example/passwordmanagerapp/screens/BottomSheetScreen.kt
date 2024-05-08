@@ -7,25 +7,16 @@ import com.example.passwordmanagerapp.state.MainActivityUiState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Blue
-import androidx.compose.ui.graphics.Color.Companion.LightGray
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -40,7 +31,12 @@ enum class ActionType {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomSheetScreen(mainActivityUiState: MainActivityUiState,onActionListener: (ActionType, UserPasswordEntities) -> Unit) {
+fun BottomSheetScreen(
+    fromList: Boolean,
+    userPasswordEntities: UserPasswordEntities? = null,
+    mainActivityUiState: MainActivityUiState,
+    onActionListener: (ActionType, UserPasswordEntities) -> Unit
+) {
     var showSheet by remember {
         mutableStateOf(true)
     }
@@ -61,11 +57,23 @@ fun BottomSheetScreen(mainActivityUiState: MainActivityUiState,onActionListener:
                     .padding(bottom = 15.dp)
                     .fillMaxWidth()
             ) {
-                BottomSheetContent(onActionListener = {
-                    actionType, userPasswordEntities ->
-                    onActionListener(actionType,userPasswordEntities)
+                if (fromList) {
+                    if (userPasswordEntities != null) {
+                        ViewUserDataPasswordDetails(
+                            uiState = mainActivityUiState,
+                            onActionListener = { actionType, userPasswordEntities ->
+                                onActionListener(actionType, userPasswordEntities)
+                            },
+                            userPasswordEntities = userPasswordEntities
+                        )
+                    }
+                } else {
 
-                })
+                    BottomSheetContent(onActionListener = { actionType, userPasswordEntities ->
+                        onActionListener(actionType, userPasswordEntities)
+
+                    })
+                }
             }
         }, containerColor = Color(0xffF9F9F9)
     )
@@ -73,7 +81,7 @@ fun BottomSheetScreen(mainActivityUiState: MainActivityUiState,onActionListener:
 
 
 @Composable
-fun BottomSheetContent(onActionListener: (ActionType,UserPasswordEntities) -> Unit) {
+fun BottomSheetContent(onActionListener: (ActionType, UserPasswordEntities) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -83,21 +91,26 @@ fun BottomSheetContent(onActionListener: (ActionType,UserPasswordEntities) -> Un
         var userNameOrEmail by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
 
-            MyTextField(value = "Account Name") {
-                accountName = it
-            }
-            MyTextField(value = "UserName/Email") {
-                userNameOrEmail = it
-            }
-            MyTextField(value = "Password") {
-                password = it
-            }
+        MyTextField(value = "Account Name") {
+            accountName = it
+        }
+        MyTextField(value = "UserName/Email") {
+            userNameOrEmail = it
+        }
+        MyTextField(value = "Password") {
+            password = it
+        }
         Spacer(modifier = Modifier.height(16.dp))
 
-        val userDatEntities = UserPasswordEntities(accountName = accountName, password = password, userName = userNameOrEmail, emailId = "dcd")
+        val userDatEntities = UserPasswordEntities(
+            accountName = accountName,
+            password = password,
+            userName = userNameOrEmail,
+            emailId = "dcd"
+        )
         Button(onClick = {
-            onActionListener(ActionType.ADD,userDatEntities)
-             }, modifier = Modifier.fillMaxWidth()) {
+            onActionListener(ActionType.ADD, userDatEntities)
+        }, modifier = Modifier.fillMaxWidth()) {
             Text(text = "Add New Account")
         }
     }
@@ -106,7 +119,83 @@ fun BottomSheetContent(onActionListener: (ActionType,UserPasswordEntities) -> Un
 }
 
 @Composable
-fun EditTextWithRoundedCorners() {
+fun ViewUserDataPasswordDetails(
+    uiState: MainActivityUiState,
+    onActionListener: (ActionType, UserPasswordEntities) -> Unit,
+    userPasswordEntities: UserPasswordEntities
+) {
+    Row {
+        Text(
+            text = "Account Details",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            style = TextStyle(
+                fontSize = 15.sp,
+                color = Color(0xff3F7DE3),
+                fontWeight = FontWeight.Medium
+            )
+        )
+
+        UserPasswordDetailsView(
+            modifier = Modifier.padding(10.dp),
+            userHeaderData = "Account Type",
+            userValueData = userPasswordEntities.accountName
+        )
+        UserPasswordDetailsView(
+            modifier = Modifier.padding(10.dp),
+            userHeaderData = "UserName/Email",
+            userValueData = userPasswordEntities.userName
+        )
+        UserPasswordDetailsView(
+            modifier = Modifier.padding(10.dp),
+            userHeaderData = "Account Type",
+            userValueData = userPasswordEntities.emailId
+        )
+
+        Column {
+            Button(onClick = {
+                onActionListener(ActionType.EDIT, userPasswordEntities)
+            }, modifier = Modifier.fillMaxWidth()) {
+                Text(text = "Add New Account")
+            }
+            Button(onClick = {
+                onActionListener(ActionType.DELETE, userPasswordEntities)
+            }, modifier = Modifier.fillMaxWidth()) {
+                Text(text = "Add New Account")
+            }
+        }
+
+    }
+}
+
+@Composable
+fun UserPasswordDetailsView(modifier: Modifier, userHeaderData: String, userValueData: String) {
+    Row(modifier) {
+        Text(
+            text = userHeaderData,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            style = TextStyle(
+                fontSize = 15.sp,
+                color = Color(0xffCCCCCC),
+                fontWeight = FontWeight.Medium
+            )
+        )
+
+        Text(
+            text = userValueData,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            style = TextStyle(
+                fontSize = 20.sp,
+                color = Color(0xff333333),
+                fontWeight = FontWeight.SemiBold
+            )
+        )
+    }
 
 
 }

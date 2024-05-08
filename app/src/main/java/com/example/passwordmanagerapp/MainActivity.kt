@@ -130,28 +130,38 @@ fun ViewLogList(
         var isBottomSheetOpened by remember {
             mutableStateOf(false)
         }
+        var fromListView by remember {
+            mutableStateOf(false)
+        }
+
 
         CustomFloatingActionButton {
             isBottomSheetOpened = true
         }
         if (isBottomSheetOpened) {
+            val userPasswordEntities : UserPasswordEntities? = null
+            val fromList : Boolean = false
+
+
             BottomSheetScreen(
-                mainActivityUiState = mainActivityUiState,
-                onActionListener = { actionType, userPasswordEntities ->
-                    when(actionType){
-                        ActionType.ADD -> {
-                            viewModel.insertUserDataToDb(userPasswordEntities)
-                        }
-                        ActionType.DELETE -> {
-                            viewModel.deleteUserById(userPasswordEntities.id)
-
-                        }
-                        ActionType.EDIT -> {
-                            viewModel.updateUserData(userPasswordEntities)
-
-                        }
+                mainActivityUiState = mainActivityUiState
+            ) { actionType, userPasswordEntities ->
+                when (actionType) {
+                    ActionType.ADD -> {
+                        viewModel.insertUserDataToDb(userPasswordEntities)
                     }
-                })
+
+                    ActionType.DELETE -> {
+                        viewModel.deleteUserById(userPasswordEntities.id)
+
+                    }
+
+                    ActionType.EDIT -> {
+                        viewModel.updateUserData(userPasswordEntities)
+
+                    }
+                }
+            }
         }
     }
 }
