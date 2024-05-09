@@ -1,7 +1,6 @@
 package com.example.passwordmanagerapp
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,17 +32,21 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.passwordmanagerapp.room.entities.UserPasswordEntities
 import com.example.passwordmanagerapp.screens.ActionType
 import com.example.passwordmanagerapp.screens.BottomSheetScreen
 import com.example.passwordmanagerapp.state.MainActivityUiState
 import com.example.passwordmanagerapp.ui.theme.PasswordManagerAppTheme
+import com.example.passwordmanagerapp.viewModel.MainActivityViewModel
+import java.util.Locale
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+
             PasswordManagerAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -61,7 +64,6 @@ class MainActivity : ComponentActivity() {
                             )
                         )
                         Divider(color = Color.LightGray, thickness = 0.7.dp)
-
                         ViewLogList(viewModel, mainActivityUiState = mainActivityUiState)
                     }
                 }
@@ -148,32 +150,46 @@ fun ViewLogList(
         }
 
         if (isBottomSheetOpened) {
-            BottomSheetScreen(
+
+            BottomSheetScreen(viewModel = viewModel,
                 fromList = fromListView,
                 userPasswordEntities = selectedId,
-                mainActivityUiState = mainActivityUiState
-            ) { actionType, userPasswordEntities ->
-                when (actionType) {
-                    ActionType.ADD -> {
-                        viewModel.insertUserDataToDb(userPasswordEntities)
-                        isBottomSheetOpened = false
-                    }
+                onActionListener =
+                { actionType, userPasswordEntities ->
+                    when (actionType) {
+                        ActionType.ADD -> {
+                            viewModel.insertUserDataToDb(userPasswordEntities)
 
-                    ActionType.DELETE -> {
-                        viewModel.deleteUserById(userPasswordEntities.id)
+                            isBottomSheetOpened = false
+                            viewModel.fetchData()
+                        }
+
+                        ActionType.DELETE -> {
+                            viewModel.deleteUserById(userPasswordEntities.id)
+                            isBottomSheetOpened = false
+                            fromListView = false
+                            selectedId = null
+                            viewModel.fetchData()
+                        }
+
+                        ActionType.EDIT -> {
+                            viewModel.updateUserData(userPasswordEntities)
+                            isBottomSheetOpened = false
+                            fromListView = false
+                            selectedId = null
+                            viewModel.fetchData()
+
+                        }
+                    }
+                }, onDismiss = {
+                    if (it) {
                         isBottomSheetOpened = false
                         fromListView = false
                         selectedId = null
-                    }
-
-                    ActionType.EDIT -> {
-                        viewModel.updateUserData(userPasswordEntities)
-                        isBottomSheetOpened = false
-                        fromListView = false
-                        selectedId = null
+                        viewModel.fetchData()
                     }
                 }
-            }
+            )
         }
     }
 }
@@ -199,19 +215,24 @@ fun ViewLogListItem(
                 .fillMaxWidth()
                 .padding(all = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 15.dp)
             ) {
                 Text(
-                    text = passwordManagerDTO.accountName,
-                    color = componentColor
+                    modifier = Modifier.padding(vertical = 8.dp),
+
+                    text = passwordManagerDTO.accountName.toLowerCase(Locale.ROOT)
+                        .capitalize(Locale.ROOT),
+                    color = componentColor,
+                    style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 )
                 Text(
-                    modifier = Modifier.padding(horizontal = 5.dp),
-                    text = passwordManagerDTO.password,
-                    color = componentColor
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 8.dp),
+                    text = "•".repeat(passwordManagerDTO.password.length),
+                    color = Color.Gray,
+                    style = TextStyle(fontSize = 25.sp, fontWeight = FontWeight.ExtraBold)
                 )
             }
             Spacer(
