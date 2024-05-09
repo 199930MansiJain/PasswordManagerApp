@@ -22,9 +22,7 @@ class MainActivityViewModel : ViewModel() {
 
     fun insertUserDataToDb(userPasswordEntities: UserPasswordEntities) {
         CoroutineScope(Dispatchers.IO).launch {
-
             ApplicationClass.database.userDao().insertUser(userPasswordEntities)
-
             _state.update { it.copy(passwordDataList = getAllUserFromDb()) }
 
         }

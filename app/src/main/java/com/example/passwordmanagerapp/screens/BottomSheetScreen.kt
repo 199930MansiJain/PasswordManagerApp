@@ -1,5 +1,6 @@
 package com.example.passwordmanagerapp.screens
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.runtime.Composable
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -33,7 +35,7 @@ enum class ActionType {
 @Composable
 fun BottomSheetScreen(
     fromList: Boolean,
-    userPasswordEntities: UserPasswordEntities? = null,
+    userPasswordEntities: UserPasswordEntities?,
     mainActivityUiState: MainActivityUiState,
     onActionListener: (ActionType, UserPasswordEntities) -> Unit
 ) {
@@ -67,8 +69,8 @@ fun BottomSheetScreen(
                             userPasswordEntities = userPasswordEntities
                         )
                     }
-                } else {
 
+                } else {
                     BottomSheetContent(onActionListener = { actionType, userPasswordEntities ->
                         onActionListener(actionType, userPasswordEntities)
 
@@ -108,10 +110,14 @@ fun BottomSheetContent(onActionListener: (ActionType, UserPasswordEntities) -> U
             userName = userNameOrEmail,
             emailId = "dcd"
         )
-        Button(onClick = {
-            onActionListener(ActionType.ADD, userDatEntities)
-        }, modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Add New Account")
+        Button(
+            onClick = {
+                onActionListener(ActionType.ADD, userDatEntities)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Black) // Set background color
+        ) {
+            Text(text = "Add New Account", color = Color.White)
         }
     }
 
@@ -124,45 +130,62 @@ fun ViewUserDataPasswordDetails(
     onActionListener: (ActionType, UserPasswordEntities) -> Unit,
     userPasswordEntities: UserPasswordEntities
 ) {
-    Row {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        Log.e("ugfuef", userPasswordEntities.toString())
         Text(
             text = "Account Details",
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp),
+                .padding(15.dp),
             style = TextStyle(
-                fontSize = 15.sp,
+                fontSize = 20.sp,
                 color = Color(0xff3F7DE3),
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.SemiBold
             )
         )
 
         UserPasswordDetailsView(
-            modifier = Modifier.padding(10.dp),
+            modifier = Modifier.padding(5.dp),
             userHeaderData = "Account Type",
             userValueData = userPasswordEntities.accountName
         )
         UserPasswordDetailsView(
-            modifier = Modifier.padding(10.dp),
+            modifier = Modifier.padding(5.dp),
             userHeaderData = "UserName/Email",
             userValueData = userPasswordEntities.userName
         )
         UserPasswordDetailsView(
-            modifier = Modifier.padding(10.dp),
+            modifier = Modifier.padding(5.dp),
             userHeaderData = "Account Type",
             userValueData = userPasswordEntities.emailId
         )
 
-        Column {
-            Button(onClick = {
-                onActionListener(ActionType.EDIT, userPasswordEntities)
-            }, modifier = Modifier.fillMaxWidth()) {
-                Text(text = "Add New Account")
+        Row(
+            modifier = Modifier.padding(15.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Button(
+                onClick = {
+                    onActionListener(ActionType.EDIT, userPasswordEntities)
+                }, modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f), colors = ButtonDefaults.buttonColors(containerColor = Color(0xffF04646))
+            ) {
+                Text(text = "Edit",color = Color.White)
             }
-            Button(onClick = {
-                onActionListener(ActionType.DELETE, userPasswordEntities)
-            }, modifier = Modifier.fillMaxWidth()) {
-                Text(text = "Add New Account")
+            Button(
+                onClick = {
+                    onActionListener(ActionType.DELETE, userPasswordEntities)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+            ) {
+                Text(text = "Delete", color = Color.White)
             }
         }
 
@@ -191,7 +214,7 @@ fun UserPasswordDetailsView(modifier: Modifier, userHeaderData: String, userValu
                 .padding(10.dp),
             style = TextStyle(
                 fontSize = 20.sp,
-                color = Color(0xff333333),
+                color = Color.Black,
                 fontWeight = FontWeight.SemiBold
             )
         )

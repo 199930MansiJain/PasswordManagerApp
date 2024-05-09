@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -110,6 +111,16 @@ fun ViewLogList(
     viewModel: MainActivityViewModel,
     mainActivityUiState: MainActivityUiState,
 ) {
+
+    var isBottomSheetOpened by remember {
+        mutableStateOf(false)
+    }
+    var fromListView by remember {
+        mutableStateOf(false)
+    }
+    var selectedId by remember { mutableStateOf<UserPasswordEntities?>(null) }
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -123,42 +134,43 @@ fun ViewLogList(
                     .align(Alignment.TopStart)
             ) {
                 itemsIndexed(items = mainActivityUiState.passwordDataList) { index, promotion ->
-                    ViewLogListItem(promotion)
+                    ViewLogListItem(promotion, onItemClick = { clickedData ->
+                        selectedId = clickedData
+                        fromListView = true
+                        isBottomSheetOpened = true
+                    })
                 }
             }
         }
-        var isBottomSheetOpened by remember {
-            mutableStateOf(false)
-        }
-        var fromListView by remember {
-            mutableStateOf(false)
-        }
-
 
         CustomFloatingActionButton {
             isBottomSheetOpened = true
         }
+
         if (isBottomSheetOpened) {
-            val userPasswordEntities : UserPasswordEntities? = null
-            val fromList : Boolean = false
-
-
             BottomSheetScreen(
+                fromList = fromListView,
+                userPasswordEntities = selectedId,
                 mainActivityUiState = mainActivityUiState
             ) { actionType, userPasswordEntities ->
                 when (actionType) {
                     ActionType.ADD -> {
                         viewModel.insertUserDataToDb(userPasswordEntities)
+                        isBottomSheetOpened = false
                     }
 
                     ActionType.DELETE -> {
                         viewModel.deleteUserById(userPasswordEntities.id)
-
+                        isBottomSheetOpened = false
+                        fromListView = false
+                        selectedId = null
                     }
 
                     ActionType.EDIT -> {
                         viewModel.updateUserData(userPasswordEntities)
-
+                        isBottomSheetOpened = false
+                        fromListView = false
+                        selectedId = null
                     }
                 }
             }
@@ -169,6 +181,7 @@ fun ViewLogList(
 @Composable
 fun ViewLogListItem(
     passwordManagerDTO: UserPasswordEntities,
+    onItemClick: (UserPasswordEntities) -> Unit
 ) {
     val componentColor = Color.Black
     Box(
@@ -177,6 +190,9 @@ fun ViewLogListItem(
             .padding(vertical = 4.dp, horizontal = 8.dp)
             .clip(RoundedCornerShape(15.dp))
             .background(Color.White)
+            .clickable {
+                onItemClick.invoke(passwordManagerDTO)
+            }
     ) {
         Row(
             modifier = Modifier
@@ -207,7 +223,10 @@ fun ViewLogListItem(
                 modifier = Modifier
                     .padding(2.dp)
             ) {
-                Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "arrow")
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowRight,
+                    contentDescription = "arrow"
+                )
             }
         }
     }
